@@ -20,10 +20,15 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Adapter;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     EditText et;
@@ -32,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ProgressDialog dialog;
     LinearLayout linearLayout;
     Animation anim;
+    ListView lv;
+    ArrayList<String> data;
+    ArrayAdapter<String> adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +49,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et = (EditText)findViewById(R.id.editText);
         b_Go = (Button)findViewById(R.id.b_Go);
         wv = (WebView)findViewById(R.id.webView);
+        lv = (ListView)findViewById(R.id.listView);
+
+        data = new ArrayList<String>();
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,data);
+        lv.setAdapter(adapter);
+
+
         //통신하고싶으면
         wv.addJavascriptInterface(new javaScriptMethod(),"myApp");//지금 내가 만든 클래스, 자바스크립트가 얘 사용할 떄 부를 이름
         dialog = new ProgressDialog(this);
@@ -108,16 +123,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0,1,0,"즐찾");//두번째꺼가 아이디
+        menu.add(0,1,0,"즐겨찾기추가");//두번째꺼가 아이디
+        menu.add(1,2,0,"즐겨찾기목록");
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == 1){
-            wv.loadUrl("file:///android_asset/www/index.html");//아까 불러왔던 웹파일
+            lv.setVisibility(View.INVISIBLE);
+            wv.setVisibility(View.VISIBLE);
+            wv.loadUrl("file:///android_asset/www/urladd.html");//아까 불러왔던 웹파일
             linearLayout.setAnimation(anim);
             anim.start();
+        }
+        else if(item.getItemId() == 2){
+            wv.setVisibility(View.INVISIBLE);
+            lv.setVisibility(View.VISIBLE);
         }
         return super.onOptionsItemSelected(item);
     }//어떤 메뉴 item 눌렀을 때 로드 url 했던 곳으로 이동하는!!!꺄아 된닿ㅎㅎㅎ
@@ -144,14 +166,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
+        @JavascriptInterface
+        public void sendData(String sitename, String url){
+            for(int i = 0; i < data.size(); i++ ){
+                if(data.get(i).contains(url)){
+                    wv.loadUrl("javascript:displayMsg()");
+                    return;
+                }
+            }
+            data.add("<" + sitename + ">" + " " + url);
+            adapter.notifyDataSetChanged();
+
+        }
     }
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.b_Go){
 
-        }
-        else if(view.getId() == R.id.b_aa){
-            wv.loadUrl("javascript:changeImege()");
         }
     }
 }
