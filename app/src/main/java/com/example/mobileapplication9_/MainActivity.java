@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.preference.DialogPreference;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,7 +19,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ListView lv;
     ArrayList<String> data;
     ArrayAdapter<String> adapter;
+    ArrayList<Web> web;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lv = (ListView)findViewById(R.id.listView);
 
         data = new ArrayList<String>();
+        web = new ArrayList<Web>();
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,data);
         lv.setAdapter(adapter);
 
@@ -138,8 +139,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             anim.start();
         }
         else if(item.getItemId() == 2){
+
+            linearLayout.setVisibility(View.GONE);
             wv.setVisibility(View.INVISIBLE);
             lv.setVisibility(View.VISIBLE);
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    wv.setVisibility(View.VISIBLE);
+                    linearLayout.setVisibility(View.VISIBLE);
+                    et.setText(web.get(i).getUrl());
+                    wv.loadUrl(web.get(i).getUrl());
+                }
+            });
+            lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                    AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
+                    dlg.setTitle("삭제")
+                            .setMessage("삭제하시겠습니까?")
+                            .setNegativeButton("아니오",null)
+                            .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int in) {
+                                    data.remove(i);
+                                    web.remove(i);
+                                    adapter.notifyDataSetChanged();
+                                    Toast.makeText(getApplicationContext(),"삭제되었습니다",Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+            });
         }
         return super.onOptionsItemSelected(item);
     }//어떤 메뉴 item 눌렀을 때 로드 url 했던 곳으로 이동하는!!!꺄아 된닿ㅎㅎㅎ
@@ -147,42 +179,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Handler myHan = new Handler();
 
     class javaScriptMethod {
+        Handler handler = new Handler();
         //자바 스크립트가 쓸 거라고 어노테이션 필수(안 하면 웹페이지에서 사용 못해)
-        @JavascriptInterface
-        public void displayToast() {
-//            Toast.makeText(getApplicationContext(),"HI",Toast.LENGTH_SHORT).show();
-            myHan.post(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
-                    dlg.setTitle("그림 바꾸기").setMessage("바꿔요?")
-                            .setNegativeButton("ㄴㄴ",null)
-                            .setPositiveButton("ㅇㅋ", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    wv.loadUrl("javascript:changeImage()");
-                                }
-                            }).show();
-                }
-            });
-        }
+//        @JavascriptInterface
+//        public void displayToast() {
+//            myHan.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
+//                    dlg.setTitle("그림 바꾸기").setMessage("바꿔요?")
+//                            .setNegativeButton("아니오",null)
+//                            .setPositiveButton("예", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialogInterface, int i) {
+//                                    wv.loadUrl("javascript:changeImage()");
+//                                }
+//                            }).show();
+//                }
+//            });
+//        }
         @JavascriptInterface
         public void sendData(String sitename, String url){
-            for(int i = 0; i < data.size(); i++ ){
-                if(data.get(i).contains(url)){
-                    wv.loadUrl("javascript:displayMsg()");
-                    return;
-                }
+            if(checkURL(url)) {
+                data.add("<" + sitename + ">" + " " + url);
+                web.add(new Web(sitename,url));
+                adapter.notifyDataSetChanged();
+                Toast.makeText(getApplication(),"추가 되었습니다",Toast.LENGTH_SHORT).show();
             }
-            data.add("<" + sitename + ">" + " " + url);
-            adapter.notifyDataSetChanged();
+            else{
+                myHan.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        wv.loadUrl("javascript:displayMsg()");
+                    }
+                });
+            }
+        }
 
+        private boolean checkURL(String url) {
+            boolean check = true;
+            for(int i = 0; i < web.size(); i++ ) {
+                if (web.get(i).getUrl().equals(url)) check = false;
+            }
+            return check;
+        }
+
+        @JavascriptInterface
+        public void showURL(){
+            linearLayout.setVisibility(View.VISIBLE);
         }
     }
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.b_Go){
-
+            wv.loadUrl(et.getText().toString());
         }
     }
 }
