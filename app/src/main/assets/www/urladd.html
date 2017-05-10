@@ -24,8 +24,8 @@
 		document.getElementById('url').focus();
 	}
 
-	function setMsg(msg){
-		document.getElementById('msg').innerText = msg;
+	function showURL(){
+	    myApp.showURL();
 	}
 
 	function siteAdd(){
@@ -45,8 +45,6 @@
 		//여기에 앱 메소드 호출
 
 		myApp.sendData(sitename.value, url.value);
-
-
 	}
   </script>
 </HEAD>
@@ -54,7 +52,7 @@
 <BODY style="text-align:center;background-color:#FFCCFF">
 <input type="button" value="URL 보이기" onclick="">
 <h3>즐겨찾기를 추가해 보세요</h3>
-<TABLE style="background-color:#FFF2FF" align="center">
+<TABLE style="background-color:#FFF2FF" align="center" onclick="showURL()">
     <TR>
         <TD>사이트명</TD>
         <TD><INPUT TYPE="text" id="sitename"></TD>
