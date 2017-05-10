@@ -28,6 +28,10 @@
 	    myApp.showURL();
 	}
 
+	function setMsg(msg){
+		document.getElementById('msg').innerText = msg;
+	}
+
 	function siteAdd(){
 		var sitename = document.getElementById('sitename');
 		if(sitename.value==''){
@@ -50,9 +54,9 @@
 </HEAD>
 
 <BODY style="text-align:center;background-color:#FFCCFF">
-<input type="button" value="URL 보이기" onclick="">
+<input type="button" value="URL 보이기" onclick="showURL()">
 <h3>즐겨찾기를 추가해 보세요</h3>
-<TABLE style="background-color:#FFF2FF" align="center" onclick="showURL()">
+<TABLE style="background-color:#FFF2FF" align="center" onclick="">
     <TR>
         <TD>사이트명</TD>
         <TD><INPUT TYPE="text" id="sitename"></TD>

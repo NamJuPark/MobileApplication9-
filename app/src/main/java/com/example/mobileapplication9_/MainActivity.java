@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dialog.show();
             }
         });
+
         wv.loadUrl("http://blog.daum.net/qkrska66");
 
         wv.setWebChromeClient(new WebChromeClient(){
@@ -101,19 +103,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return super.onJsAlert(view, url, message, result);
             }
         });
-
         anim = AnimationUtils.loadAnimation(this,R.anim.translate);
         anim.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
             }
-
             @Override
             public void onAnimationEnd(Animation animation) {
                 linearLayout.setVisibility(View.GONE);
             }
-
             @Override
             public void onAnimationRepeat(Animation animation) {
 
@@ -129,25 +128,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onCreateOptionsMenu(menu);
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == 1){
+        if(item.getItemId() == 1){//즐겨찾기 추가
+            linearLayout.setAnimation(anim);
+            anim.start();
             lv.setVisibility(View.INVISIBLE);
             wv.setVisibility(View.VISIBLE);
             wv.loadUrl("file:///android_asset/www/urladd.html");//아까 불러왔던 웹파일
-            linearLayout.setAnimation(anim);
-            anim.start();
         }
-        else if(item.getItemId() == 2){
-
-            linearLayout.setVisibility(View.GONE);
+        else if(item.getItemId() == 2){//즐겨찾기 목록
+            linearLayout.setVisibility(View.INVISIBLE);
             wv.setVisibility(View.INVISIBLE);
             lv.setVisibility(View.VISIBLE);
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    wv.setVisibility(View.VISIBLE);
                     linearLayout.setVisibility(View.VISIBLE);
+                    wv.setVisibility(View.VISIBLE);
                     et.setText(web.get(i).getUrl());
                     wv.loadUrl(web.get(i).getUrl());
                 }
@@ -161,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .setNegativeButton("아니오",null)
                             .setPositiveButton("예", new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int in) {
+                                public void onClick(DialogInterface dialogInterface, int in){
                                     data.remove(i);
                                     web.remove(i);
                                     adapter.notifyDataSetChanged();
@@ -176,10 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }//어떤 메뉴 item 눌렀을 때 로드 url 했던 곳으로 이동하는!!!꺄아 된닿ㅎㅎㅎ
 
-    Handler myHan = new Handler();
-
     class javaScriptMethod {
-        Handler handler = new Handler();
+        Handler myHan = new Handler();
         //자바 스크립트가 쓸 거라고 어노테이션 필수(안 하면 웹페이지에서 사용 못해)
 //        @JavascriptInterface
 //        public void displayToast() {
@@ -204,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 data.add("<" + sitename + ">" + " " + url);
                 web.add(new Web(sitename,url));
                 adapter.notifyDataSetChanged();
-                Toast.makeText(getApplication(),"추가 되었습니다",Toast.LENGTH_SHORT).show();
             }
             else{
                 myHan.post(new Runnable() {
@@ -215,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
             }
         }
-
+        @JavascriptInterface
         private boolean checkURL(String url) {
             boolean check = true;
             for(int i = 0; i < web.size(); i++ ) {
@@ -226,7 +222,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @JavascriptInterface
         public void showURL(){
-            linearLayout.setVisibility(View.VISIBLE);
+            myHan.post(new Runnable() {
+                @Override
+                public void run() {
+                    linearLayout.setVisibility(View.VISIBLE);
+                }
+            });
+
         }
     }
     @Override
